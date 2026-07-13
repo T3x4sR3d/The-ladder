@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="table-card">
+    <div class="section-title-row">
+        <div>
+            <h2>New Zealand Rankings</h2>
+            <p class="muted">Ranked from sanctioned TSNZ event scores entered by the super admin. Club challenge scores do not affect these rankings.</p>
+        </div>
+    </div>
+
+    <form method="get" action="/" class="filter-form">
+        <label>
+            Grade
+            <select name="grade">
+                <option value="">All grades</option>
+                {% for grade in grades %}
+                    <option value="{{ grade }}" {% if filters.grade == grade %}selected{% endif %}>{{ grade }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            Age Status
+            <select name="age_status">
+                <option value="">All age groups</option>
+                {% for status in ["Junior", "Standard", "Veteran"] %}
+                    <option value="{{ status }}" {% if filters.age_status == status %}selected{% endif %}>{{ status }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            Sex
+            <select name="sex">
+                <option value="">All</option>
+                {% for option in sex_options %}
+                    <option value="{{ option }}" {% if filters.sex == option %}selected{% endif %}>{{ option }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            Club
+            <select name="club_id">
+                <option value="">All clubs</option>
+                {% for club in clubs %}
+                    <option value="{{ club['id'] }}" {% if filters.club_id == club['id'] %}selected{% endif %}>{{ club['name'] }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <div class="filter-actions">
+            <button type="submit">Apply Filters</button>
+            <a class="button secondary-button" href="/">Clear</a>
+        </div>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Name</th>
+                <th>Surname</th>
+                <th>Grade</th>
+                <th>Age Status</th>
+                <th>Sex</th>
+                <th>Club</th>
+                <th>Avg Score</th>
+                <th>Weighted Score</th>
+                <th>Events</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rankings %}
+                <tr>
+                    <td>{{ row['rank'] }}</td>
+                    <td>{{ row['first_name'] }}</td>
+                    <td>{{ row['surname'] }}</td>
+                    <td><span class="badge">{{ row['grade'] }}</span></td>
+                    <td>{{ row['age_status'] }}</td>
+                    <td>{{ row['sex'] }}</td>
+                    <td>{{ row['club_name'] }}</td>
+                    <td>{{ row['avg_score_display'] }}</td>
+                    <td><strong>{{ row['weighted_score_display'] }}</strong></td>
+                    <td>{{ row['event_count'] }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="10">No ranking records yet.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+{% if shooter %}
+<section class="table-card">
+    <h2>Your Sanctioned Score History</h2>
+    <p class="muted">These are the sanctioned TSNZ event scores that count toward your New Zealand ranking.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Event Date</th>
+                <th>Event</th>
+                <th>Score</th>
+                <th>Weighted Score</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for score in shooter_rank_history %}
+                <tr>
+                    <td>{{ score['event_date']|dmy }}</td>
+                    <td>{{ score['event_name'] }}</td>
+                    <td>{{ score['score_points']|score }}</td>
+                    <td>{{ ((score['score_points'] // 100) + ((score['score_points'] % 100) * 0.15))|weighted }}</td>
+                    <td>{{ score['notes'] or '-' }}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="5">No sanctioned ranking scores entered for you yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+{% endblock %}

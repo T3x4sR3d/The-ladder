@@ -1,0 +1,435 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="admin-grid">
+    <div class="form-card">
+        <h2>Enter Weekly Club Score</h2>
+        <p class="muted">These scores affect club challenge ladders only. They do not affect the New Zealand Rankings.</p>
+        <form method="post" action="/enter_score">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <label>
+                TSNZ Number
+                <input type="text" name="tsnz_number" required>
+            </label>
+            <label>
+                Score
+                <input type="text" name="score" placeholder="98.07 or 100.10" required>
+            </label>
+            <button type="submit">Enter Club Score</button>
+        </form>
+    </div>
+
+    <div class="form-card">
+        <h2>Register Shooter</h2>
+        <form method="post" action="/register_shooter">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            {% if user['is_super'] %}
+                <label>
+                    Club
+                    <select name="club_id" required>
+                        {% for club in clubs %}
+                            {% if not club['is_super'] %}
+                                <option value="{{ club['id'] }}">{{ club['name'] }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </label>
+            {% endif %}
+            <label>
+                TSNZ Number
+                <input type="text" name="tsnz_number" required>
+            </label>
+            <label>
+                First Name
+                <input type="text" name="first_name" required>
+            </label>
+            <label>
+                Surname
+                <input type="text" name="surname" required>
+            </label>
+            <label>
+                DOB
+                <input type="text" name="dob" placeholder="dd/mm/yyyy" required>
+            </label>
+            <label>
+                Sex
+                <select name="sex" required>
+                    {% for option in sex_options %}
+                        <option value="{{ option }}">{{ option }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>
+                Grade
+                <select name="grade" required>
+                    {% for grade in grades %}
+                        <option value="{{ grade }}">{{ grade }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>
+                Shooter Login Password
+                <input type="password" name="shooter_password" minlength="8" required>
+            </label>
+            <button type="submit">Register Shooter</button>
+        </form>
+    </div>
+</section>
+
+{% if user['is_super'] %}
+<section class="admin-grid">
+    <div class="form-card">
+        <h2>Enter Sanctioned Ranking Score</h2>
+        <p class="muted">Only super admin can enter these. They affect the New Zealand Rankings.</p>
+        <form method="post" action="/enter_ranking_score">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <label>
+                TSNZ Number
+                <input type="text" name="tsnz_number" required>
+            </label>
+            <label>
+                Event Name
+                <input type="text" name="event_name" placeholder="TSNZ event / competition name" required>
+            </label>
+            <label>
+                Event Date
+                <input type="text" name="event_date" placeholder="dd/mm/yyyy" required>
+            </label>
+            <label>
+                Score
+                <input type="text" name="score" placeholder="99.09 or 100.10" required>
+            </label>
+            <label>
+                Notes optional
+                <textarea name="notes" rows="3" placeholder="Optional notes"></textarea>
+            </label>
+            <button type="submit">Enter Ranking Score</button>
+        </form>
+    </div>
+
+
+    <div class="form-card">
+        <h2>Change Super Admin Password</h2>
+        <p class="muted">Use this immediately after first login. The default password is only for initial setup.</p>
+        <form method="post" action="/change_super_password">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <label>
+                Current Password
+                <input type="password" name="current_password" required>
+            </label>
+            <label>
+                New Password
+                <input type="password" name="new_password" minlength="10" required>
+            </label>
+            <label>
+                Confirm New Password
+                <input type="password" name="confirm_password" minlength="10" required>
+            </label>
+            <button type="submit">Update Super Admin Password</button>
+        </form>
+    </div>
+
+    <div class="form-card">
+        <h2>Create Club Account</h2>
+        <form method="post" action="/add_club">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <label>
+                Club Name
+                <input type="text" name="name" required>
+            </label>
+            <label>
+                Username
+                <input type="text" name="username" required>
+            </label>
+            <label>
+                Password
+                <input type="password" name="password" required>
+            </label>
+            <button type="submit">Create Club</button>
+        </form>
+    </div>
+
+    <div class="form-card">
+        <h2>Weekly Club Match Setting</h2>
+        <p class="muted">Current setting: <strong>{{ attack_text }}</strong>; {{ defend_text }}.</p>
+        <p class="muted">Default calendar pattern for this week would be: <strong>{% if default_attack == 'even' %}Even positions attack{% else %}Odd positions attack{% endif %}</strong>.</p>
+        <form method="post" action="/set_attack_parity">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <label>
+                Who is attacking this week?
+                <select name="attack_parity" required>
+                    <option value="even" {% if current_attack == 'even' %}selected{% endif %}>Even positions attack / Odd positions defend</option>
+                    <option value="odd" {% if current_attack == 'odd' %}selected{% endif %}>Odd positions attack / Even positions defend</option>
+                </select>
+            </label>
+            <button type="submit">Update Weekly Match Setting</button>
+        </form>
+    </div>
+
+    <div class="form-card">
+        <h2>New Zealand Ladder Toggle</h2>
+        <p class="muted">This controls the optional national challenge ladder page. The New Zealand Rankings stay on either way.</p>
+        <p class="muted">Current status: <strong>{% if national_ladder_enabled %}On{% else %}Off{% endif %}</strong>.</p>
+        <form method="post" action="/toggle_national_ladder" class="toggle-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <label class="toggle-row">
+                <input type="checkbox" name="national_ladder_enabled" value="1" {% if national_ladder_enabled %}checked{% endif %}>
+                <span>Show New Zealand Ladder link and process national ladder swaps</span>
+            </label>
+            <button type="submit">Save Ladder Toggle</button>
+        </form>
+    </div>
+
+    <div class="form-card">
+        <h2>Process Last Completed Week</h2>
+        <p>The system auto-processes club challenge ladders after the Sunday cutoff. If the New Zealand Ladder is turned on, it is processed too. Ranking scores are never affected by ladder scores.</p>
+        <form method="post" action="/process_week">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit">Process Last Completed Week</button>
+        </form>
+    </div>
+</section>
+{% endif %}
+
+<section class="table-card" id="ladder-editor">
+    <div class="section-title-row">
+        <div>
+            <h2>{% if user['is_super'] %}Admin Shooter Records{% else %}Your Club Shooter Records{% endif %}</h2>
+            <p id="quickMoveStatus" class="quick-move-status" aria-live="polite"></p>
+        </div>
+        <span class="badge">Quick reorder: no page refresh</span>
+    </div>
+    <p class="muted">TSNZ numbers are only shown inside the admin/score-entry area.</p>
+    <p class="muted">Use the arrow buttons to onboard existing rankings. Club accounts can edit their own club ladder. The super admin can edit any club ladder{% if national_ladder_enabled %} and the New Zealand Ladder{% endif %}.</p>
+    <table>
+        <thead>
+            <tr>
+                {% if user['is_super'] and national_ladder_enabled %}<th>NZ Position</th>{% endif %}
+                <th>Club Position</th>
+                <th>TSNZ Number</th>
+                <th>Name</th>
+                <th>Surname</th>
+                <th>DOB</th>
+                <th>Sex</th>
+                <th>Grade</th>
+                <th>Age Status</th>
+                <th>Club</th>
+                <th>Move Club Ladder</th>
+                {% if user['is_super'] and national_ladder_enabled %}<th>Move NZ Ladder</th>{% endif %}
+                {% if user['is_super'] %}<th>Actions</th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for shooter in shooters %}
+                <tr>
+                    {% if user['is_super'] and national_ladder_enabled %}<td>{{ shooter['ladder_position'] }}</td>{% endif %}
+                    <td>{{ shooter['club_ladder_position'] }}</td>
+                    <td>{{ shooter['tsnz_number'] }}</td>
+                    <td>{{ shooter['first_name'] }}</td>
+                    <td>{{ shooter['surname'] }}</td>
+                    <td>{{ shooter['dob']|dmy }}</td>
+                    <td>{{ shooter['sex'] }}</td>
+                    <td>{{ shooter['grade'] }}</td>
+                    <td>{{ shooter['dob']|age_status }}</td>
+                    <td>{{ shooter['club_name'] }}</td>
+                    <td>
+                        <div class="move-buttons">
+                            <form method="post" action="/move_club_shooter/{{ shooter['id'] }}/up" class="inline-form quick-move-form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="arrow-button" title="Move up club ladder">↑ Club</button>
+                            </form>
+                            <form method="post" action="/move_club_shooter/{{ shooter['id'] }}/down" class="inline-form quick-move-form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="arrow-button" title="Move down club ladder">↓ Club</button>
+                            </form>
+                        </div>
+                    </td>
+                    {% if user['is_super'] and national_ladder_enabled %}
+                        <td>
+                            <div class="move-buttons">
+                                <form method="post" action="/move_global_shooter/{{ shooter['id'] }}/up" class="inline-form quick-move-form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <button type="submit" class="arrow-button" title="Move up New Zealand Ladder">↑ NZ</button>
+                                </form>
+                                <form method="post" action="/move_global_shooter/{{ shooter['id'] }}/down" class="inline-form quick-move-form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <button type="submit" class="arrow-button" title="Move down New Zealand Ladder">↓ NZ</button>
+                                </form>
+                            </div>
+                        </td>
+                    {% endif %}
+                    {% if user['is_super'] %}
+                        <td>
+                            <form method="post" action="/delete_shooter/{{ shooter['id'] }}" class="inline-form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="button-danger">Delete</button>
+                            </form>
+                        </td>
+                    {% endif %}
+                </tr>
+            {% else %}
+                <tr><td colspan="11">No shooters registered yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+{% if user['is_super'] %}
+<section class="table-card">
+    <h2>Sanctioned Ranking Scores</h2>
+    <p class="muted">Edit or delete the TSNZ event scores that calculate the New Zealand Rankings. Weighted Score = main score + inner count × 0.15.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Event Date</th>
+                <th>Event</th>
+                <th>TSNZ Number</th>
+                <th>Name</th>
+                <th>Club</th>
+                <th>Score</th>
+                <th>Weighted Score</th>
+                <th>Notes</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in recent_ranking_scores %}
+                <tr>
+                    <form method="post" action="/update_ranking_score/{{ item['id'] }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <td><input type="text" name="event_date" value="{{ item['event_date']|dmy }}" required></td>
+                        <td><input type="text" name="event_name" value="{{ item['event_name'] }}" required></td>
+                        <td>{{ item['tsnz_number'] }}</td>
+                        <td>{{ item['first_name'] }} {{ item['surname'] }}</td>
+                        <td>{{ item['club_name'] }}</td>
+                        <td><input type="text" name="score" value="{{ item['score_points']|score }}" required></td>
+                        <td>{{ ((item['score_points'] // 100) + ((item['score_points'] % 100) * 0.15))|weighted }}</td>
+                        <td><input type="text" name="notes" value="{{ item['notes'] or '' }}"></td>
+                        <td class="actions-cell">
+                            <button type="submit">Save</button>
+                    </form>
+                            <form method="post" action="/delete_ranking_score/{{ item['id'] }}" class="inline-form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="button-danger">Delete</button>
+                            </form>
+                        </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="9">No sanctioned ranking scores entered yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+
+<section class="table-card">
+    <h2>Recent Weekly Club Scores</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Week</th>
+                <th>TSNZ Number</th>
+                <th>Name</th>
+                <th>Club</th>
+                <th>Score</th>
+                <th>Club Result</th>
+                {% if user['is_super'] %}<th>Actions</th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for score in recent_scores %}
+                <tr class="{{ score['club_result'] or '' }}">
+                    <td>{{ score['week_start']|dmy }}</td>
+                    <td>{{ score['tsnz_number'] }}</td>
+                    <td>{{ score['first_name'] }} {{ score['surname'] }}</td>
+                    <td>{{ score['club_name'] }}</td>
+                    <td>{{ score['score_points']|score }}</td>
+                    <td>{{ score['club_result'] or '-' }}</td>
+                    {% if user['is_super'] %}
+                        <td>
+                            <form method="post" action="/delete_score/{{ score['id'] }}" class="inline-form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="button-danger">Delete</button>
+                            </form>
+                        </td>
+                    {% endif %}
+                </tr>
+            {% else %}
+                <tr><td colspan="7">No weekly club scores entered yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<script>
+(function () {
+    const editorId = "ladder-editor";
+
+    function setQuickMoveStatus(message, type = "info") {
+        const status = document.getElementById("quickMoveStatus");
+        if (!status) return;
+        status.textContent = message;
+        status.className = "quick-move-status " + type;
+        if (message) {
+            clearTimeout(status.dataset.timerId);
+            const timerId = setTimeout(() => {
+                status.textContent = "";
+                status.className = "quick-move-status";
+            }, 2500);
+            status.dataset.timerId = timerId;
+        }
+    }
+
+    document.addEventListener("submit", async function (event) {
+        const form = event.target.closest(".quick-move-form");
+        if (!form) return;
+
+        event.preventDefault();
+
+        const editor = document.getElementById(editorId);
+        const button = form.querySelector("button[type='submit']");
+        if (!editor || !button) {
+            form.submit();
+            return;
+        }
+
+        const oldText = button.textContent;
+        button.disabled = true;
+        button.textContent = "Moving…";
+        editor.classList.add("is-reordering");
+        setQuickMoveStatus("Moving shooter…");
+
+        try {
+            const response = await fetch(form.action, {
+                method: "POST",
+                body: new FormData(form),
+                credentials: "same-origin",
+                headers: {"X-Requested-With": "fetch"}
+            });
+
+            const html = await response.text();
+            if (!response.ok) {
+                throw new Error("Move failed");
+            }
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, "text/html");
+            const newEditor = doc.getElementById(editorId);
+
+            if (!newEditor) {
+                throw new Error("Could not refresh ladder editor");
+            }
+
+            editor.replaceWith(newEditor);
+            setQuickMoveStatus("Ladder order updated.", "success");
+        } catch (error) {
+            button.disabled = false;
+            button.textContent = oldText;
+            editor.classList.remove("is-reordering");
+            setQuickMoveStatus("Could not move shooter. Try again.", "error");
+        }
+    });
+})();
+</script>
+
+{% endblock %}

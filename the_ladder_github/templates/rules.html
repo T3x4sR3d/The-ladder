@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="table-card rules-page">
+    <h2>Rules</h2>
+    <p class="muted">These are the working rules for THE LADDER proof-of-concept.</p>
+
+    <h3>Weekly challenge format</h3>
+    <p>Each week, shooters challenge the person directly above or below them depending on the weekly attacking setting.</p>
+    <ul>
+        <li>If <strong>even positions attack</strong>, position 2 attacks 1, position 4 attacks 3, position 6 attacks 5, and so on.</li>
+        <li>If <strong>odd positions attack</strong>, position 3 attacks 4, position 5 attacks 6, position 7 attacks 8, and so on.</li>
+        <li>Position 1 never attacks. Position 1 only defends when position 2 is attacking.</li>
+        <li>The lowest placed shooter only attacks when their position is part of the attacking group. If there is nobody below them to defend, they have no match that week.</li>
+    </ul>
+
+    <h3>Winning and movement</h3>
+    <ul>
+        <li>The attacking shooter must outscore the defending shooter.</li>
+        <li>If the attacker scores higher, the attacker and defender swap ladder positions.</li>
+        <li>If the attacker ties or scores lower, the ladder positions stay the same.</li>
+        <li>If either shooter does not have a score entered for that week, that match is not processed.</li>
+    </ul>
+
+    <h3>Scores</h3>
+    <ul>
+        <li>Scores are entered out of 100.10 for 25 yard indoor.</li>
+        <li>Valid examples include 98.07, 90.09, 100.07, and 100.10.</li>
+        <li>Only 100 can have .10.</li>
+        <li>A score with .09 must be at least 90.09, .08 must be at least 80.08, .07 must be at least 70.07, and so on.</li>
+        <li>Each shooter can only have one score entered per week.</li>
+    </ul>
+
+    <h3>Score entry window</h3>
+    <ul>
+        <li>Scores are entered for the current week.</li>
+        <li>The week runs from Monday to Sunday.</li>
+        <li>The ladder auto-processes completed weeks after the Sunday cutoff when the app is running, or when the app is next opened after the cutoff.</li>
+    </ul>
+
+    <h3>Club access</h3>
+    <ul>
+        <li>Members must log in using their club account before viewing the ladder.</li>
+        <li>Club accounts can only enter scores for shooters registered to their own club.</li>
+        <li>TSNZ numbers are shown only inside the admin and score-entry area.</li>
+    </ul>
+
+    <h3>Super admin controls</h3>
+    <ul>
+        <li>The super admin can create club accounts.</li>
+        <li>The super admin can register, remove, and manage shooters.</li>
+        <li>The super admin can delete scores.</li>
+        <li>The super admin can change this week’s attacking setting between odd positions attacking and even positions attacking.</li>
+    </ul>
+
+    <h3>Grades and age status</h3>
+    <ul>
+        <li>Grades are D, C, B, A, and Master.</li>
+        <li>When a shooter starts in a new grade, they start at the bottom of that grade.</li>
+        <li>Junior is calculated by year: if a shooter turns 21 before December of that year, they are not a junior for the following year.</li>
+        <li>Veteran is 60 and above.</li>
+        <li>All other shooters are standard.</li>
+    </ul>
+</section>
+{% endblock %}
