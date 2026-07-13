@@ -1,0 +1,71 @@
+THE LADDER - GitHub/local run commands
+======================================
+
+1) Unzip or clone the project, then enter the folder:
+
+cd the_ladder_github
+
+2) Install Python virtual environment support if needed:
+
+sudo apt update
+sudo apt install python3-venv python3-pip python3-full
+
+3) Create and activate a virtual environment:
+
+python3 -m venv .venv
+source .venv/bin/activate
+
+4) Install requirements:
+
+pip install -r requirements.txt
+
+5) Run locally on this laptop only:
+
+python3 app.py
+
+Open:
+
+http://127.0.0.1:5000
+
+6) Run on your local Wi-Fi network so your phone can access it:
+
+python3 app.py --host 0.0.0.0
+
+Find your laptop IP:
+
+hostname -I
+
+Open on your phone, using your laptop IP:
+
+http://YOUR-LAPTOP-IP:5000
+
+Default first-login super admin account
+=======================================
+
+Username: superadmin
+Password: change-me-now
+
+After logging in, go to Admin and use "Change Super Admin Password".
+
+Database notes
+==============
+
+This GitHub version includes an empty ladder.db with only the super admin account.
+There are no clubs, shooters, weekly scores, ranking scores, or dummy test data.
+
+For a completely fresh database, delete ladder.db and run:
+
+python3 app.py
+
+The app will recreate the database with only the default super admin account.
+
+Security notes for later deployment
+===================================
+
+Before any real deployment, set a proper secret key:
+
+export LADDER_SECRET_KEY='replace-this-with-a-long-random-secret'
+
+If you set LADDER_SECRET_KEY after a database already exists, username hashes may not match unless LADDER_USERNAME_PEPPER is kept consistent. The simplest approach is to set LADDER_SECRET_KEY before first creating the database.
+
+Do not use --break-system-packages. Use the .venv commands above.

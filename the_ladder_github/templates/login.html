@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="form-card narrow-card">
+    <h2>Login</h2>
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label class="hp-field" aria-hidden="true">Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+        <label>
+            Username
+            <input type="text" name="username" required>
+        </label>
+        <label>
+            Password
+            <input type="password" name="password" required>
+        </label>
+        <button type="submit">Login</button>
+    </form>
+
+    <p class="muted login-help">
+        Access is restricted to club members. Use your club account to view the ladder.
+    </p>
+</section>
+{% endblock %}
